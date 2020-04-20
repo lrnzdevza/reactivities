@@ -33,7 +33,7 @@ export const ActivityListItem: React.FC<{ activity: IActivity }> = ({
         {activity.venue}, {activity.city}
       </Segment>
       <Segment secondary>Attendees will go here</Segment>
-      <Segment>
+      <Segment clearing>
         <span>{activity.description}</span>
         <Button
           as={Link}
