@@ -5,14 +5,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Persistence
 {
-    public class DataContext : IdentityDbContext<AppUser> 
+    public class DataContext : IdentityDbContext<AppUser>
     {
         public DataContext(DbContextOptions options) : base(options)
-        {           
+        {
         }
 
         public DbSet<NewValue> Values { get; set; }
         public DbSet<Activity> Activities { get; set; }
+        public DbSet<UserActivity> UserActivities { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -20,10 +21,23 @@ namespace Persistence
 
             builder.Entity<NewValue>()
                     .HasData(
-                        new NewValue{Id = 1, Name = "Value 101"},
-                        new NewValue{Id = 2, Name = "Value 102"},
-                        new NewValue{Id = 3, Name = "Value 103"}
+                        new NewValue { Id = 1, Name = "Value 101" },
+                        new NewValue { Id = 2, Name = "Value 102" },
+                        new NewValue { Id = 3, Name = "Value 103" }
                     );
+
+            builder.Entity<UserActivity>(x => x.HasKey(ua =>
+                new { ua.AppUserId, ua.ActivityId }));
+
+            builder.Entity<UserActivity>()
+                .HasOne(u => u.AppUser)
+                .WithMany(a => a.UserActivities)
+                .HasForeignKey(u => u.AppUserId);
+
+            builder.Entity<UserActivity>()
+                .HasOne(a => a.Activity)
+                .WithMany(u => u.UserActivities)
+                .HasForeignKey(a => a.ActivityId);
         }
     }
 }
