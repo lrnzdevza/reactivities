@@ -1,14 +1,12 @@
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Application.Activities;
 using Application.Errors;
 using Application.Interfaces;
 using Domain;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
 using Persistence;
 
 namespace Application.User
@@ -17,7 +15,6 @@ namespace Application.User
     {
         public class Query : IRequest<User>
         {
-
             public string Email { get; set; }
             public string Password { get; set; }
         }
@@ -33,8 +30,6 @@ namespace Application.User
 
         public class Handler : IRequestHandler<Query, User>
         {
-            private readonly DataContext _context;
-            private readonly ILogger<List> _logger;
             private readonly UserManager<AppUser> _userManager;
             private readonly SignInManager<AppUser> _signInManager;
             private readonly IJWTGenerator _jwtGenerator;
@@ -43,22 +38,21 @@ namespace Application.User
                 _jwtGenerator = jwtGenerator;
                 _signInManager = signInManager;
                 _userManager = userManager;
-
             }
 
-            public async Task<User> Handle(Query request,
-                CancellationToken cancellationToken)
+            public async Task<User> Handle(Query request, CancellationToken cancellationToken)
             {
                 var user = await _userManager.FindByEmailAsync(request.Email);
 
                 if (user == null)
                     throw new RestException(HttpStatusCode.Unauthorized);
 
-                var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
+                var result = await _signInManager
+                    .CheckPasswordSignInAsync(user, request.Password, false);
 
                 if (result.Succeeded)
                 {
-                    //TODO: generate token
+                    // TODO: generate token
                     return new User
                     {
                         DisplayName = user.DisplayName,
@@ -69,7 +63,6 @@ namespace Application.User
                 }
 
                 throw new RestException(HttpStatusCode.Unauthorized);
-
             }
         }
     }
